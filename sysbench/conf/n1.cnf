@@ -1,0 +1,46 @@
+
+# mysqld configuration
+[mysqld]
+basedir=/opt/projects/mysql/80/mysqlonarm/installed/
+datadir=/data/mysql-data/node1/dn1/
+port=4000
+socket=/tmp/n1.sock
+mysqlx-port=4001
+log-error-verbosity=3
+
+
+# mysql client connection params
+max_prepared_stmt_count=1000000
+max_connections=2048
+back_log=2000
+
+# buffer pool and redo-log file setting
+# based on number of core
+innodb_buffer_pool_instances=8
+# normally 75-90% of system memory.
+innodb_buffer_pool_size=28G
+innodb_log_file_size=2G
+innodb_log_buffer_size=64M
+innodb_buffer_pool_dump_at_shutdown=0
+innodb_buffer_pool_load_at_startup=0
+
+# neighbors flushing turned off for SSD
+innodb_flush_neighbors=0
+# recommended as innodb has its own buffer pool cache
+innodb_flush_method=O_DIRECT
+
+# table open limits
+table_open_cache=4096
+table_open_cache_instances=64
+
+# max should be = IOPS for the allocated vm
+innodb_io_capacity=12000
+innodb_io_capacity_max=16000
+
+# read/write io threads
+innodb_read_io_threads=8
+innodb_write_io_threads=8
+innodb_purge_threads=4
+# should not exceed number of buffer pool instance
+innodb_page_cleaners=4
+
