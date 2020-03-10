@@ -22,6 +22,8 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 changeover=60
+# warmup time
+warmuptime=120
 
 if [ -d "output/$TESTCASE" ]; then
   echo 'previous run for same test-case is present. please remove it and restart'
@@ -57,7 +59,7 @@ echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
 #=======================
 
 echo 'Warming up DB'
-./warmup/warmup.sh 10 &> output/$TESTCASE/warmup.out
+./warmup/warmup.sh $warmuptime &> output/$TESTCASE/warmup.out
 echo -e "\n\n"
 
 
