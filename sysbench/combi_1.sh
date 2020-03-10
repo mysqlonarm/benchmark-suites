@@ -39,7 +39,7 @@ fi
 # if there is no mysql client on local machine then adjust MYSQL_BASE_DIR accordingly.
 export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
 $MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER \
-                          --password=$MYSQL_PASSWD -e "drop database $MYSQL_DB; create database $MYSQL_DB" 2> /dev/null 
+                          --password=$MYSQL_PASSWD -e "drop database if exists $MYSQL_DB; create database $MYSQL_DB" 2> /dev/null 
 rm -rf output/$TESTCASE
 mkdir -p output/$TESTCASE
 
