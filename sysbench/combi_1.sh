@@ -9,19 +9,19 @@ fi
 
 TESTCASE=$1
 
-export MYSQL_HOST="192.168.1.103"
+export MYSQL_HOST="192.168.1.73"
 export MYSQL_PORT=4000
 export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
 export TABLES=10
-export TABLE_SIZE=1000
-export TIME_PER_TC=10
-#export TC_TO_RUN="rw upd upd-ni ro ps"
-export TC_TO_RUN="rw"
+export TABLE_SIZE=10000000
+export TIME_PER_TC=60
+export TC_TO_RUN="rw upd upd-ni ro ps"
 
-changeover=0
+# sleep between 2 sub-testcase run (like while switching from rw -> ro)
+changeover=60
 
 if [ -d "output/$TESTCASE" ]; then
   echo 'previous run for same test-case is present. please remove it and restart'

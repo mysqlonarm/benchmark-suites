@@ -8,7 +8,6 @@ socket=/tmp/n1.sock
 mysqlx-port=4001
 log-error-verbosity=3
 
-
 # mysql client connection params
 max_prepared_stmt_count=1000000
 max_connections=2048
