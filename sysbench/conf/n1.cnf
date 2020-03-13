@@ -17,7 +17,7 @@ back_log=2000
 # based on number of core
 innodb_buffer_pool_instances=8
 # normally 75-90% of system memory.
-innodb_buffer_pool_size=28G
+innodb_buffer_pool_size=27G
 innodb_log_file_size=2G
 innodb_log_buffer_size=64M
 innodb_buffer_pool_dump_at_shutdown=0
