@@ -2,14 +2,18 @@
 
 #set -x
 
-if [[ $# -ne 1 ]] ; then
-    echo 'usage: combi_1 <test-case-name>'
+if [[ $# -lt 1 ]] || [[ $# -gt 2 ]] ; then
+    echo 'usage: combi_1 <test-case-name> [skipload]'
     exit 1
 fi
 
 TESTCASE=$1
+SKIPLOAD=0
+if [ "$2" = "skipload" ]; then
+	SKIPLOAD=1
+fi
 
-export MYSQL_HOST="192.168.1.73"
+export MYSQL_HOST="192.168.1.103"
 export MYSQL_PORT=4000
 export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
@@ -25,34 +29,41 @@ changeover=60
 # warmup time
 warmuptime=120
 
+#-------------------------------------------------------------------------------------
+# execution start. avoid modifying anything post this point. All your enviornment
+# variable should be set above.
+
+
+#=======================
+# step-0: check for presence of existing result directory
+#=======================
 if [ -d "output/$TESTCASE" ]; then
   echo 'previous run for same test-case is present. please remove it and restart'
   exit 1
 fi
-
-#-------------------------------------------------------------------------------------
-# execution start. avoid modifying anything post this point. All your enviornment
-# variable should be set above.
+rm -rf output/$TESTCASE
+mkdir -p output/$TESTCASE
 
 #=======================
 # step-1
 #=======================
 
 # if there is no mysql client on local machine then adjust MYSQL_BASE_DIR accordingly.
-export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
-$MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER \
-                          --password=$MYSQL_PASSWD -e "drop database if exists $MYSQL_DB; create database $MYSQL_DB" 2> /dev/null 
-rm -rf output/$TESTCASE
-mkdir -p output/$TESTCASE
-
+if [ $SKIPLOAD -eq 0 ]; then
+  export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
+  $MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER \
+    --password=$MYSQL_PASSWD -e "drop database if exists $MYSQL_DB; create database $MYSQL_DB" 2> /dev/null
+fi
 
 #=======================
 # step-2: load data
 #=======================
 
-echo -e "\n\n"
-echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
-./load-data/load-data.sh &> output/$TESTCASE/load-data.out
+if [ $SKIPLOAD -eq 0 ]; then
+  echo -e "\n\n"
+  echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
+  ./load-data/load-data.sh &> output/$TESTCASE/load-data.out
+fi
 
 #=======================
 # step-3: warmup <usage: script-name <warm-uptime>
@@ -148,7 +159,7 @@ echo -e "\n\n"
 
 #=======================
 # step-5
-# processing result. <usage: script-name $TESTCASE> 
+# processing result. <usage: script-name $TESTCASE>
 #=======================
 echo "Processing result"
 ./process-result/presult.sh $TESTCASE
