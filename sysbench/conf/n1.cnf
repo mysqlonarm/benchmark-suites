@@ -43,3 +43,10 @@ innodb_purge_threads=4
 # should not exceed number of buffer pool instance
 innodb_page_cleaners=4
 
+# disable innodb ahi
+# through our local testing we observed that AHI is not able to distribute
+# keys evenly among the N buckets. Also, especially with benchmarking
+# warmup load and time will affect the AHI build.
+# rule-out this config that can cause variable load.
+innodb_adaptive_hash_index=0
+

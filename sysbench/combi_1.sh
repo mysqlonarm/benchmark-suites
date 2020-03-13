@@ -27,7 +27,7 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 changeover=60
 # warmup time
-warmuptime=120
+warmuptime=300
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
