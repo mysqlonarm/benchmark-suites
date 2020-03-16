@@ -15,9 +15,15 @@ User should also look at the provided conf/n1.cnf for reference purpose and tune
 
 Invocation is simple as ./combi_1 <tc-name>
 
-<i>for example: ./combi_1 cacheline128<i>
+<i>for example: ./combi_1 cacheline128 [skipload]</i>
 
 This will create a folder name output/cacheline128 that will have logs of the sub-command invoked.
 Above command will also print a summary at the end of the test.
+
+[skipload]: optional parameter that will skip create/load of the database.
+Normal sequence executes following steps: load, warmup, workload, summary.
+load will load the database from scratch. If user would like to re-use the same database then simply use skipload.
+
+<i>Note: name of the database is same as name of the test-case. Like in case above it would cacheline128 database so if you use skipload then backup existing test-case folder and re-run with same test-case name as db with same name should exist<i>
 
 
