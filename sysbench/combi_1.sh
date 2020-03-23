@@ -19,9 +19,9 @@ export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
-export TABLES=10
-export TABLE_SIZE=10000000
-export TIME_PER_TC=60
+export TABLES=50
+export TABLE_SIZE=1000000
+export TIME_PER_TC=120
 export TC_TO_RUN="rw upd upd-ni ro ps"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
