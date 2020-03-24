@@ -19,15 +19,15 @@ export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
-export TABLES=50
+export TABLES=64
 export TABLE_SIZE=1000000
-export TIME_PER_TC=120
+export TIME_PER_TC=240
 export TC_TO_RUN="rw upd upd-ni ro ps"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 changeover=60
 # warmup time
-warmuptime=300
+warmuptime=600
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
