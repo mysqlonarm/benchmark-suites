@@ -1,7 +1,7 @@
 
 #### mysqld configuration
 [mysqld]
-basedir=/opt/projects/mysql/80/mysqlonarm/installed/
+basedir=/opt/projects/mysql/80/mysqlonarm/oracle/installed/
 datadir=/data/mysql-data/node1/dn1/
 port=4000
 socket=/tmp/n1.sock

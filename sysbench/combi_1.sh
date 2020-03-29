@@ -21,13 +21,14 @@ export MYSQL_PASSWD=""
 
 export TABLES=64
 export TABLE_SIZE=1000000
-export TIME_PER_TC=240
+export TIME_PER_TC=60
 export TC_TO_RUN="rw upd upd-ni ro ps"
+
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 changeover=60
 # warmup time
-warmuptime=600
+warmuptime=300
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
@@ -48,11 +49,13 @@ mkdir -p output/$TESTCASE
 # step-1
 #=======================
 
+export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
+export MYSQLCMD="$MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT \
+            -u $MYSQL_USER --password=$MYSQL_PASSWD"
+
 # if there is no mysql client on local machine then adjust MYSQL_BASE_DIR accordingly.
 if [ $SKIPLOAD -eq 0 ]; then
-  export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
-  $MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT -u $MYSQL_USER \
-    --password=$MYSQL_PASSWD -e "drop database if exists $MYSQL_DB; create database $MYSQL_DB" 2> /dev/null
+  $MYSQLCMD -e "drop database if exists $MYSQL_DB; create database $MYSQL_DB" 2> /dev/null
 fi
 
 #=======================
@@ -63,16 +66,19 @@ if [ $SKIPLOAD -eq 0 ]; then
   echo -e "\n\n"
   echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
   ./load-data/load-data.sh &> output/$TESTCASE/load-data.out
+  $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
+  sleep $changeover
 fi
 
 #=======================
 # step-3: warmup <usage: script-name <warm-uptime>
 #=======================
 
-echo 'Warming up DB'
-./warmup/warmup.sh $warmuptime &> output/$TESTCASE/warmup.out
-echo -e "\n\n"
-
+if [[ $warmuptime -ne 0 ]]; then
+  echo 'Warming up DB'
+  ./warmup/warmup.sh $warmuptime &> output/$TESTCASE/warmup.out
+  echo -e "\n\n"
+fi
 
 #=======================
 # step-4
@@ -83,64 +89,7 @@ echo -e "\n\n"
 # run for 1/2/4/8/16/32/64/128 only.
 NCORE=$(( 10*`nproc` ))
 
-#---- oltp-rw
-sleep $changeover
-count=1
-if [[ $TC_TO_RUN =~ "rw" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-rw with $count threads"
-    ./workload/oltp-rw.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-rw.out
-    count=$(( count * 2 ))
-  done
-else
-  echo "Skipping oltp-rw"
-fi
-
-#---- oltp-update-index
-sleep $changeover
-count=1
-if [[ $TC_TO_RUN =~ "upd" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-update-index with $count threads"
-    ./workload/oltp-update-index.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-update-index.out
-    count=$(( count * 2 ))
-  done
-else
-  echo "Skipping oltp-update-index"
-fi
-
-#---- oltp-update-non-index
-sleep $changeover
-count=1
-if [[ $TC_TO_RUN =~ "upd-ni" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-update-non-index with $count threads"
-    ./workload/oltp-update-non-index.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-update-non-index.out
-    count=$(( count * 2 ))
-  done
-else
-  echo "Skipping oltp-update-non-index"
-fi
-
-#---- oltp-ro
-sleep $changeover
-count=1
-if [[ $TC_TO_RUN =~ "ro" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-read-only with $count threads"
-    ./workload/oltp-ro.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-ro.out
-    count=$(( count * 2 ))
-  done
-else
-  echo "Skipping oltp-rw"
-fi
-
 #---- oltp-point-select
-sleep $changeover
 count=1
 if [[ $TC_TO_RUN =~ "ps" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
@@ -153,9 +102,66 @@ else
   echo "Skipping oltp-point-select"
 fi
 
+#---- oltp-ro
+count=1
+if [[ $TC_TO_RUN =~ "ro" ]]; then
+  for (( iter=1; count<=NCORE; iter++ ))
+  do
+    echo "Running oltp-read-only with $count threads"
+    ./workload/oltp-ro.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-ro.out
+    count=$(( count * 2 ))
+  done
+else
+  echo "Skipping oltp-ro"
+fi
+
+#---- oltp-rw
+count=1
+if [[ $TC_TO_RUN =~ "rw" ]]; then
+  for (( iter=1; count<=NCORE; iter++ ))
+  do
+    echo "Running oltp-rw with $count threads"
+    ./workload/oltp-rw.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-rw.out
+    count=$(( count * 2 ))
+  done
+  $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
+  sleep $changeover
+else
+  echo "Skipping oltp-rw"
+fi
+
+#---- oltp-update-index
+count=1
+if [[ $TC_TO_RUN =~ "upd" ]]; then
+  for (( iter=1; count<=NCORE; iter++ ))
+  do
+    echo "Running oltp-update-index with $count threads"
+    ./workload/oltp-update-index.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-update-index.out
+    count=$(( count * 2 ))
+  done
+  $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
+  sleep $changeover
+else
+  echo "Skipping oltp-update-index"
+fi
+
+#---- oltp-update-non-index
+count=1
+if [[ $TC_TO_RUN =~ "upd-ni" ]]; then
+  for (( iter=1; count<=NCORE; iter++ ))
+  do
+    echo "Running oltp-update-non-index with $count threads"
+    ./workload/oltp-update-non-index.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-update-non-index.out
+    count=$(( count * 2 ))
+  done
+  $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
+  sleep $changeover
+else
+  echo "Skipping oltp-update-non-index"
+fi
+
 echo "Workload processed"
 echo -e "\n\n"
-
 
 #=======================
 # step-5
@@ -163,3 +169,4 @@ echo -e "\n\n"
 #=======================
 echo "Processing result"
 ./process-result/presult.sh $TESTCASE
+
