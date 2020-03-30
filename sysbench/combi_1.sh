@@ -22,6 +22,7 @@ export MYSQL_PASSWD=""
 export TABLES=64
 export TABLE_SIZE=1000000
 export TIME_PER_TC=60
+export WARMUP_PER_TC=10
 export TC_TO_RUN="rw upd upd-ni ro ps"
 
 
@@ -95,7 +96,7 @@ if [[ $TC_TO_RUN =~ "ps" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-point-select with $count threads"
-    ./workload/oltp-point-select.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-point-select.out
+    ./workload/oltp-point-select.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-point-select.out
     count=$(( count * 2 ))
   done
 else
@@ -108,7 +109,7 @@ if [[ $TC_TO_RUN =~ "ro" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-read-only with $count threads"
-    ./workload/oltp-ro.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-ro.out
+    ./workload/oltp-ro.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-ro.out
     count=$(( count * 2 ))
   done
 else
@@ -121,7 +122,7 @@ if [[ $TC_TO_RUN =~ "rw" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-rw with $count threads"
-    ./workload/oltp-rw.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-rw.out
+    ./workload/oltp-rw.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-rw.out
     count=$(( count * 2 ))
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
@@ -136,7 +137,7 @@ if [[ $TC_TO_RUN =~ "upd" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-update-index with $count threads"
-    ./workload/oltp-update-index.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-update-index.out
+    ./workload/oltp-update-index.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-update-index.out
     count=$(( count * 2 ))
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
@@ -151,7 +152,7 @@ if [[ $TC_TO_RUN =~ "upd-ni" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-update-non-index with $count threads"
-    ./workload/oltp-update-non-index.sh $count $TIME_PER_TC &>> output/$TESTCASE/oltp-update-non-index.out
+    ./workload/oltp-update-non-index.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-update-non-index.out
     count=$(( count * 2 ))
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
