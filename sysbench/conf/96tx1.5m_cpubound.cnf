@@ -62,3 +62,6 @@ innodb_adaptive_hash_index=0
 join_buffer_size=256K
 sort_buffer_size=256K
 
+# enable numa interleave if the machine/vm has more than 1 NUMA node
+innodb_numa_interleave=1
+

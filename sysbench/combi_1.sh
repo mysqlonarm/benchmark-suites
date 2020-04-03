@@ -13,14 +13,14 @@ if [ "$2" = "skipload" ]; then
 	SKIPLOAD=1
 fi
 
-export MYSQL_HOST="192.168.1.103"
+export MYSQL_HOST="192.168.0.130"
 export MYSQL_PORT=4000
 export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
-export TABLES=64
-export TABLE_SIZE=1000000
+export TABLES=96
+export TABLE_SIZE=1500000
 export TIME_PER_TC=60
 export WARMUP_PER_TC=10
 export TC_TO_RUN="rw upd upd-ni ro ps"
@@ -30,6 +30,8 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 changeover=60
 # warmup time
 warmuptime=300
+# core on target machine
+ncore=24
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
@@ -77,7 +79,7 @@ fi
 
 if [[ $warmuptime -ne 0 ]]; then
   echo 'Warming up DB'
-  ./warmup/warmup.sh $warmuptime &> output/$TESTCASE/warmup.out
+  ./warmup/warmup.sh $ncore $warmuptime &> output/$TESTCASE/warmup.out
   echo -e "\n\n"
 fi
 
@@ -88,7 +90,7 @@ fi
 # workload will auto-calculate number of threads to use based on core
 # if core = 16 then scalability would be < 16 * 10 (160). So test-case will
 # run for 1/2/4/8/16/32/64/128 only.
-NCORE=$(( 10*`nproc` ))
+NCORE=$(( 12*$ncore ))
 
 #---- oltp-point-select
 count=1
