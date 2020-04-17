@@ -6,7 +6,7 @@ TC=$2
 SOCK=""
 if [[ "$MYSQL_HOST" == "localhost" ]]
 then
-  SOCK="--mysql-sock=$MYSQL_SOCK"
+  SOCK="--mysql-socket=$MYSQL_SOCK"
 fi
 
 
