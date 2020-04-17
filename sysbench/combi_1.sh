@@ -13,25 +13,28 @@ if [ "$2" = "skipload" ]; then
 	SKIPLOAD=1
 fi
 
-export MYSQL_HOST="192.168.0.130"
+export MYSQL_HOST="192.168.0.239"
 export MYSQL_PORT=4000
+export MYSQL_SOCK="/tmp/n1.sock"
 export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
 export TABLES=96
 export TABLE_SIZE=1500000
-export TIME_PER_TC=60
-export WARMUP_PER_TC=10
+export TIME_PER_TC=300
+export WARMUP_PER_TC=60
 export TC_TO_RUN="rw upd upd-ni ro ps"
-
+export BENCHCORE="0,1,12,13"
+#export BENCHCORE="0,1,2,3"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
-changeover=60
+changeover=180
 # warmup time
-warmuptime=300
+warmuptime=600
+
 # core on target machine
-ncore=24
+servercore=24
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
@@ -79,7 +82,7 @@ fi
 
 if [[ $warmuptime -ne 0 ]]; then
   echo 'Warming up DB'
-  ./warmup/warmup.sh $ncore $warmuptime &> output/$TESTCASE/warmup.out
+  ./warmup/warmup.sh $servercore $warmuptime &> output/$TESTCASE/warmup.out
   echo -e "\n\n"
 fi
 
@@ -90,7 +93,7 @@ fi
 # workload will auto-calculate number of threads to use based on core
 # if core = 16 then scalability would be < 16 * 10 (160). So test-case will
 # run for 1/2/4/8/16/32/64/128 only.
-NCORE=$(( 12*$ncore ))
+NCORE=$(( 12*$servercore ))
 
 #---- oltp-point-select
 count=1
@@ -98,7 +101,7 @@ if [[ $TC_TO_RUN =~ "ps" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-point-select with $count threads"
-    ./workload/oltp-point-select.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-point-select.out
+    ./workload/oltp-point-select.sh $count &>> output/$TESTCASE/oltp-point-select.out
     count=$(( count * 2 ))
   done
 else
@@ -111,7 +114,7 @@ if [[ $TC_TO_RUN =~ "ro" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-read-only with $count threads"
-    ./workload/oltp-ro.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-ro.out
+    ./workload/oltp-ro.sh $count &>> output/$TESTCASE/oltp-ro.out
     count=$(( count * 2 ))
   done
 else
@@ -124,7 +127,7 @@ if [[ $TC_TO_RUN =~ "rw" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-rw with $count threads"
-    ./workload/oltp-rw.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-rw.out
+    ./workload/oltp-rw.sh $count &>> output/$TESTCASE/oltp-rw.out
     count=$(( count * 2 ))
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
@@ -139,7 +142,7 @@ if [[ $TC_TO_RUN =~ "upd" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-update-index with $count threads"
-    ./workload/oltp-update-index.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-update-index.out
+    ./workload/oltp-update-index.sh $count &>> output/$TESTCASE/oltp-update-index.out
     count=$(( count * 2 ))
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
@@ -154,7 +157,7 @@ if [[ $TC_TO_RUN =~ "upd-ni" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
     echo "Running oltp-update-non-index with $count threads"
-    ./workload/oltp-update-non-index.sh $count $TIME_PER_TC $WARMUP_PER_TC &>> output/$TESTCASE/oltp-update-non-index.out
+    ./workload/oltp-update-non-index.sh $count &>> output/$TESTCASE/oltp-update-non-index.out
     count=$(( count * 2 ))
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
