@@ -13,10 +13,9 @@ fi
 TASKSET="taskset -c "
 IFS=',' read -ra client_cores <<< "$BENCHCORE"
 
-echo "${#client_cores[@]}"
-
-if [[ $THDS < "${#client_cores[@]}" ]]
+if [[ $THDS -lt ${#client_cores[@]} ]]
 then
+  echo "--- generating $THDS - ${#client_cores[@]}"
   for (( i=0; i < $THDS; i++ ));
   do
     TASKSET="$TASKSET${client_cores[$i]},"
