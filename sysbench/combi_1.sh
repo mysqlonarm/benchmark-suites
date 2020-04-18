@@ -14,6 +14,7 @@ if [ "$2" = "skipload" ]; then
 fi
 
 export MYSQL_HOST="192.168.0.239"
+#export MYSQL_HOST="localhost"
 export MYSQL_PORT=4000
 export MYSQL_SOCK="/tmp/n1.sock"
 export MYSQL_USER="root"
@@ -55,8 +56,14 @@ mkdir -p output/$TESTCASE
 # step-1
 #=======================
 
+SOCK=""
+if [[ "$MYSQL_HOST" == "localhost" ]]
+then
+  SOCK="--socket=$MYSQL_SOCK"
+fi
+
 export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
-export MYSQLCMD="$MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT \
+export MYSQLCMD="$MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT $SOCK \
             -u $MYSQL_USER --password=$MYSQL_PASSWD"
 
 # if there is no mysql client on local machine then adjust MYSQL_BASE_DIR accordingly.
