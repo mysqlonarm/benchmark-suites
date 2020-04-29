@@ -13,8 +13,8 @@ if [ "$2" = "skipload" ]; then
 	SKIPLOAD=1
 fi
 
-export MYSQL_HOST="192.168.0.239"
-#export MYSQL_HOST="localhost"
+#export MYSQL_HOST="192.168.0.239"
+export MYSQL_HOST="localhost"
 export MYSQL_PORT=4000
 export MYSQL_SOCK="/tmp/n1.sock"
 export MYSQL_USER="root"
@@ -23,16 +23,16 @@ export MYSQL_PASSWD=""
 
 export TABLES=96
 export TABLE_SIZE=1500000
-export TIME_PER_TC=300
-export WARMUP_PER_TC=60
+export TIME_PER_TC=60
+export WARMUP_PER_TC=10
 export TC_TO_RUN="rw upd upd-ni ro ps"
 export BENCHCORE="0,1,12,13"
 #export BENCHCORE="0,1,2,3"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
-changeover=180
+changeover=120
 # warmup time
-warmuptime=600
+warmuptime=120
 
 # core on target machine
 servercore=24
