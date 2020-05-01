@@ -26,7 +26,7 @@ export TABLE_SIZE=1500000
 export TIME_PER_TC=60
 export WARMUP_PER_TC=10
 export TC_TO_RUN="rw upd upd-ni ro ps"
-export BENCHCORE="0,1,12,13"
+export BENCHCORE="0,12,1,13"
 #export BENCHCORE="0,1,2,3"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
