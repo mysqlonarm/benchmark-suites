@@ -26,7 +26,7 @@ const size_t k_cores = 24;
 #if defined(__x86_64__)
 const size_t k_cacheline_size = 64;
 #elif defined(__aarch64__)
-const size_t k_cacheline_size = 128;
+const size_t k_cacheline_size = 64;
 #endif
 
 // static size_t shard_slot_selector() { return (rand() % k_cores); }
