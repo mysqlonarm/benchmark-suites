@@ -44,7 +44,7 @@ innodb_buffer_pool_load_at_startup=0
 
 #### max should be = IOPS for the allocated vm
 innodb_io_capacity=12000
-innodb_io_capacity_max=16000
+innodb_io_capacity_max=24000
 
 # read/write io threads
 innodb_read_io_threads=8

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-for (( c=0; c<=10; c+=1 ))
+for (( c=1; c<=3; c+=1 ))
 do
   echo "Running $c iteration"
-  ./combi_1.sh arm skipload
+  ./run1.bms.sh arm skipload
   mv output/arm output/arm-v$c
   sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
   sleep 300 

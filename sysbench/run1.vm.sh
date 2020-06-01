@@ -23,16 +23,17 @@ export MYSQL_PASSWD=""
 
 export TABLES=96
 export TABLE_SIZE=1500000
-export TIME_PER_TC=60
-export WARMUP_PER_TC=10
+export TIME_PER_TC=300
+export WARMUP_PER_TC=60
 export TC_TO_RUN="rw upd upd-ni ro ps"
 export BENCHCORE="0,12,1,13"
-#export BENCHCORE="0,1,2,3"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
-changeover=120
+tcchangeover=120
+# sleep between 2 scalability
+scchangeover=30
 # warmup time
-warmuptime=120
+warmuptime=600
 
 # core on target machine
 servercore=24
@@ -80,7 +81,7 @@ if [ $SKIPLOAD -eq 0 ]; then
   echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
   ./load-data/load-data.sh &> output/$TESTCASE/load-data.out
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $changeover
+  sleep $tcchangeover
 fi
 
 #=======================
@@ -110,7 +111,10 @@ if [[ $TC_TO_RUN =~ "ps" ]]; then
     echo "Running oltp-point-select with $count threads"
     ./workload/oltp-point-select.sh $count &>> output/$TESTCASE/oltp-point-select.out
     count=$(( count * 2 ))
+    sleep $scchangeover
   done
+  $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
+  sleep $tcchangeover
 else
   echo "Skipping oltp-point-select"
 fi
@@ -123,7 +127,10 @@ if [[ $TC_TO_RUN =~ "ro" ]]; then
     echo "Running oltp-read-only with $count threads"
     ./workload/oltp-ro.sh $count &>> output/$TESTCASE/oltp-ro.out
     count=$(( count * 2 ))
+    sleep $scchangeover
   done
+  $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
+  sleep $tcchangeover
 else
   echo "Skipping oltp-ro"
 fi
@@ -136,9 +143,10 @@ if [[ $TC_TO_RUN =~ "rw" ]]; then
     echo "Running oltp-rw with $count threads"
     ./workload/oltp-rw.sh $count &>> output/$TESTCASE/oltp-rw.out
     count=$(( count * 2 ))
+    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $changeover
+  sleep $tcchangeover
 else
   echo "Skipping oltp-rw"
 fi
@@ -151,9 +159,10 @@ if [[ $TC_TO_RUN =~ "upd" ]]; then
     echo "Running oltp-update-index with $count threads"
     ./workload/oltp-update-index.sh $count &>> output/$TESTCASE/oltp-update-index.out
     count=$(( count * 2 ))
+    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $changeover
+  sleep $tcchangeover
 else
   echo "Skipping oltp-update-index"
 fi
@@ -166,9 +175,10 @@ if [[ $TC_TO_RUN =~ "upd-ni" ]]; then
     echo "Running oltp-update-non-index with $count threads"
     ./workload/oltp-update-non-index.sh $count &>> output/$TESTCASE/oltp-update-non-index.out
     count=$(( count * 2 ))
+    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $changeover
+  sleep $tcchangeover
 else
   echo "Skipping oltp-update-non-index"
 fi
