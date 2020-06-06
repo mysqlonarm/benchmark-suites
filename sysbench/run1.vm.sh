@@ -21,7 +21,7 @@ export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
-export TABLES=96
+export TABLES=64
 export TABLE_SIZE=1500000
 export TIME_PER_TC=300
 export WARMUP_PER_TC=60

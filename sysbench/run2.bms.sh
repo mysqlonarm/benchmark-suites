@@ -32,7 +32,7 @@ export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 tcchangeover=120
 # sleep between 2 scalability
-scchangeover=10
+scchangeover=30
 # warmup time
 warmuptime=120
 

@@ -21,7 +21,7 @@ export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
-export TABLES=96
+export TABLES=64
 export TABLE_SIZE=1500000
 export TIME_PER_TC=60
 export WARMUP_PER_TC=10
@@ -31,7 +31,7 @@ export BENCHCORE="0,12,1,13"
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 tcchangeover=120
 # sleep between 2 scalability
-scchangeover=10
+scchangeover=30
 # warmup time
 warmuptime=120
 
