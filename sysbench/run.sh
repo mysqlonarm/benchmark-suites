@@ -31,12 +31,12 @@ export TC_TO_RUN="rw ui uni ro ps"
 export BENCHCORE="0,12,1,13"
 
 # x86-bms-server-conf
-#export BENCHCORE="0,1,36,37,18,19,54,55"
+#export BENCHCORE="0,18,36,54,1,19,37,55"
 # arm-bms-server-conf
-#export BENCHCORE="0,32,1,33,2,34,3,45"
+#export BENCHCORE="0,32,1,33,2,34,3,35"
 
 # x86-bms-conf
-#export BENCHCORE="0,18,1,19,2,20,3,21,4,22,5,23"
+#export BENCHCORE="0,18,36,54,1,19,37,55,2,20,38,56"
 # arm-bms-conf
 #export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
 
