@@ -26,13 +26,26 @@ export TABLE_SIZE=5000000
 export TIME_PER_TC=60
 export WARMUP_PER_TC=10
 export TC_TO_RUN="rw upd upd-ni ro ps"
-export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
+
+# x86-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
+#export BENCHCORE="0,36,1,37"
+# arm-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
 #export BENCHCORE="0,1,2,3"
 
+# x86-bms-server-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,54,1,19,37,55"
+# arm-bms-server-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34,3,35"
+
+# x86-bms-conf (12 sysbench cores, 60 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,54,1,19,37,55,2,20,38,56"
+# arm-bms-conf (16 sysbench cores, 112 server cores, 4 numa nodes)
+#export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
+
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
-tcchangeover=120
+tcchangeover=0
 # sleep between 2 scalability
-scchangeover=30
+scchangeover=10
 # warmup time
 warmuptime=120
 
