@@ -8,6 +8,7 @@ socket=/tmp/n1.sock
 mysqlx=0
 log-error-verbosity=3
 server-id=1
+innodb_fast_shutdown=0
 
 #### bin-log
 binlog_format = ROW

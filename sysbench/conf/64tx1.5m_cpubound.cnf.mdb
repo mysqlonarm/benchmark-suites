@@ -5,8 +5,6 @@ basedir=/opt/projects/mysql/105/non-forked-mdb/mdb/installed
 datadir=/data/mdb-data/node1/dn1/
 port=4000
 socket=/tmp/n1.sock
-#mysqlx=0
-#log-error-verbosity=3
 server-id=1
 
 #### bin-log
@@ -24,17 +22,17 @@ innodb_open_files=512
 
 #### buffer pool tunnin (normally 75% of system memory).
 innodb_buffer_pool_size=25G
-innodb_buffer_pool_instances=8
+#innodb_buffer_pool_instances=8
 
 #### redolog tunning
 innodb_log_file_size=6G
-innodb_log_files_in_group=1
+#innodb_log_files_in_group=1
 innodb_log_buffer_size=64M
 
 #### tune flushing behavior
 innodb_max_dirty_pages_pct=90
 innodb_max_dirty_pages_pct_lwm=10
-innodb_lru_scan_depth=2048
+innodb_lru_scan_depth=8192
 innodb_flush_method=O_DIRECT  # recommended as innodb has its own buffer pool cache
 innodb_flush_neighbors=0      # neighbors flushing turned off for SSD
 innodb_page_cleaners=4        # should not exceed number of buffer pool instance
