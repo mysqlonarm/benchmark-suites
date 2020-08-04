@@ -29,9 +29,9 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 export BENCHCORE="0,12,1,13"
 
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
-tcchangeover=120
+tcchangeover=0
 # sleep between 2 scalability
-scchangeover=30
+scchangeover=10
 # warmup time
 warmuptime=120
 
