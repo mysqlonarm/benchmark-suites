@@ -21,19 +21,24 @@ export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
-export TABLES=64
-export TABLE_SIZE=1500000
+# tc combination: 120/60/10/10/0
+# workload-warmup time
+warmuptime=120
+# test-case execution time
 export TIME_PER_TC=60
+# test-case warmup time
 export WARMUP_PER_TC=10
-export TC_TO_RUN="rw upd upd-ni ro ps"
-export BENCHCORE="0,12,1,13"
-
-# sleep between 2 sub-testcase run (like while switching from rw -> ro)
-tcchangeover=0
 # sleep between 2 scalability
 scchangeover=10
-# warmup time
-warmuptime=120
+# sleep between 2 sub-testcase run (like while switching from rw -> ro)
+tcchangeover=0
+
+export TABLES=100
+export TABLE_SIZE=1500000
+export TC_TO_RUN="rw upd upd-ni ro ps"
+
+# core allocated to sysbench/client
+export BENCHCORE="0,12,1,13"
 
 # core on target machine
 servercore=24

@@ -6,6 +6,6 @@ do
   ./run2.vm.sh x86 skipload
   mv output/x86 output/x86-v$c
   sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
-  sleep 30
+  sleep 300
   sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"
 done
