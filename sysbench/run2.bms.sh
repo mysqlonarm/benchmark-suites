@@ -21,10 +21,20 @@ export MYSQL_USER="root"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
 
+# tc combination: 120/60/10/10/0
+# workload-warmup time
+warmuptime=120
+# test-case execution time
+export TIME_PER_TC=60
+# test-case warmup time
+export WARMUP_PER_TC=10
+# sleep between 2 scalability
+scchangeover=10
+# sleep between 2 sub-testcase run (like while switching from rw -> ro)
+tcchangeover=0
+
 export TABLES=100
 export TABLE_SIZE=5000000
-export TIME_PER_TC=60
-export WARMUP_PER_TC=10
 export TC_TO_RUN="rw upd upd-ni ro ps"
 
 # x86-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
@@ -46,13 +56,6 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 #export BENCHCORE="0,18,36,1,19,37"
 # arm-bms-conf (6 sysbench cores, 58 server cores, 2 numa nodes)
 #export BENCHCORE="0,32,1,33,2,34"
-
-# sleep between 2 sub-testcase run (like while switching from rw -> ro)
-tcchangeover=0
-# sleep between 2 scalability
-scchangeover=10
-# warmup time
-warmuptime=120
 
 # core on target machine
 servercore=128
