@@ -42,6 +42,11 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 # arm-bms-conf (16 sysbench cores, 112 server cores, 4 numa nodes)
 #export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
 
+# x86-bms-conf (6 sysbench cores, 22 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,1,19,37"
+# arm-bms-conf (6 sysbench cores, 58 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34"
+
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 tcchangeover=0
 # sleep between 2 scalability
