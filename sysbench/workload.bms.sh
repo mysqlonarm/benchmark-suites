@@ -18,25 +18,49 @@ export MYSQL_HOST="localhost"
 export MYSQL_PORT=4000
 export MYSQL_SOCK="/tmp/n1.sock"
 export MYSQL_USER="root"
+#export MYSQL_USER="benchuser"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
+#export MYSQL_PASSWD="passwd"
 
-export TABLES=64
-export TABLE_SIZE=1500000
-export TIME_PER_TC=300
-export WARMUP_PER_TC=60
-export TC_TO_RUN="rw upd upd-ni ro ps"
-export BENCHCORE="0,12,1,13"
-
-# sleep between 2 sub-testcase run (like while switching from rw -> ro)
-tcchangeover=120
+# tc combination: 120/60/10/10/0
+# workload-warmup time
+warmuptime=120
+# test-case execution time
+export TIME_PER_TC=60
+# test-case warmup time
+export WARMUP_PER_TC=10
 # sleep between 2 scalability
-scchangeover=30
-# warmup time
-warmuptime=600
+scchangeover=10
+# sleep between 2 sub-testcase run (like while switching from rw -> ro)
+tcchangeover=0
+
+export TABLES=100
+export TABLE_SIZE=3000000
+export TC_TO_RUN="rw upd upd-ni ro ps"
+
+# x86-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
+#export BENCHCORE="0,36,1,37"
+# arm-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
+#export BENCHCORE="0,1,2,3"
+
+# x86-bms-server-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,54,1,19,37,55"
+# arm-bms-server-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34,3,35"
+
+# x86-bms-conf (12 sysbench cores, 60 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,54,1,19,37,55,2,20,38,56"
+# arm-bms-conf (16 sysbench cores, 112 server cores, 4 numa nodes)
+#export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
+
+# x86-bms-conf (6 sysbench cores, 22 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,1,19,37"
+# arm-bms-conf (6 sysbench cores, 58 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34"
 
 # core on target machine
-servercore=24
+servercore=128
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
@@ -111,10 +135,8 @@ if [[ $TC_TO_RUN =~ "ps" ]]; then
     echo "Running oltp-point-select with $count threads"
     ./workload/oltp-point-select.sh $count &>> output/$TESTCASE/oltp-point-select.out
     count=$(( count * 2 ))
-    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $tcchangeover
 else
   echo "Skipping oltp-point-select"
 fi
@@ -127,10 +149,8 @@ if [[ $TC_TO_RUN =~ "ro" ]]; then
     echo "Running oltp-read-only with $count threads"
     ./workload/oltp-ro.sh $count &>> output/$TESTCASE/oltp-ro.out
     count=$(( count * 2 ))
-    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $tcchangeover
 else
   echo "Skipping oltp-ro"
 fi

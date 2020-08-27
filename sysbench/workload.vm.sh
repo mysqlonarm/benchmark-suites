@@ -18,8 +18,10 @@ export MYSQL_HOST="localhost"
 export MYSQL_PORT=4000
 export MYSQL_SOCK="/tmp/n1.sock"
 export MYSQL_USER="root"
+#export MYSQL_USER="benchuser"
 export MYSQL_DB=$TESTCASE
 export MYSQL_PASSWD=""
+#export MYSQL_PASSWD="passwd"
 
 # tc combination: 120/60/10/10/0
 # workload-warmup time
@@ -116,10 +118,8 @@ if [[ $TC_TO_RUN =~ "ps" ]]; then
     echo "Running oltp-point-select with $count threads"
     ./workload/oltp-point-select.sh $count &>> output/$TESTCASE/oltp-point-select.out
     count=$(( count * 2 ))
-    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $tcchangeover
 else
   echo "Skipping oltp-point-select"
 fi
@@ -132,10 +132,8 @@ if [[ $TC_TO_RUN =~ "ro" ]]; then
     echo "Running oltp-read-only with $count threads"
     ./workload/oltp-ro.sh $count &>> output/$TESTCASE/oltp-ro.out
     count=$(( count * 2 ))
-    sleep $scchangeover
   done
   $MYSQLCMD -e "purge binary logs before NOW();" 2> /dev/null
-  sleep $tcchangeover
 else
   echo "Skipping oltp-ro"
 fi
