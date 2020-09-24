@@ -1,6 +1,6 @@
 #!/bin/bash
 
 THDS=$1
-TC="/usr/share/sysbench/oltp_update_non_index.lua"
+TC=$SYSBENCH_LUA_SCRIPT_LOCATION"/oltp_update_non_index.lua"
 
 ./workload/run.sh $THDS $TC

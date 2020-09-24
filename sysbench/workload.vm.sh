@@ -42,6 +42,9 @@ export TC_TO_RUN="rw upd upd-ni ro ps"
 # core allocated to sysbench/client
 export BENCHCORE="0,12,1,13"
 
+# the sysbench lua scripts location
+export SYSBENCH_LUA_SCRIPT_LOCATION="/usr/share/sysbench"
+
 # core on target machine
 servercore=24
 
