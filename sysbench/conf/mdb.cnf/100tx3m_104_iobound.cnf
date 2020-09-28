@@ -11,6 +11,7 @@ innodb_fast_shutdown=0
 
 #### bin-log
 #skip-log-bin
+# log bin is not enabled by default so need to be specify it explicitly.
 log_bin=1
 sync_binlog=1
 binlog_format = ROW

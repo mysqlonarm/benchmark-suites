@@ -12,8 +12,10 @@ innodb_fast_shutdown=0
 
 #### bin-log
 #skip-log-bin
+# log bin enabled by default so don't need to be specified explicitly.
+#log_bin=1
+#sync_binlog=1
 binlog_format = ROW
-# since server is running in standalone this is fine.
 binlog_row_image=MINIMAL
 
 #### general: mysql client connection params
