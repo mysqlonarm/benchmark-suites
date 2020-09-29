@@ -39,6 +39,9 @@ export TABLES=100
 export TABLE_SIZE=3000000
 export TC_TO_RUN="rw upd upd-ni ro ps"
 
+# the sysbench lua scripts location
+export SYSBENCH_LUA_SCRIPT_LOCATION="/usr/share/sysbench"
+
 # x86-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
 #export BENCHCORE="0,36,1,37"
 # arm-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
