@@ -59,8 +59,8 @@ export SYSBENCH_LUA_SCRIPT_LOCATION="/usr/share/sysbench"
 
 # x86-bms-conf (6 sysbench cores, 22 server cores, 2 numa nodes)
 #export BENCHCORE="0,18,36,1,19,37"
-# arm-bms-conf (6 sysbench cores, 58 server cores, 2 numa nodes)
-#export BENCHCORE="0,32,1,33,2,34"
+# arm-bms-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34,3,35"
 
 # core on target machine
 servercore=128
