@@ -32,24 +32,41 @@ scchangeover=10
 # sleep between 2 sub-testcase run (like while switching from rw -> ro)
 tcchangeover=0
 
-export TABLES=50
-export TABLE_SIZE=1500000
-export TC_TO_RUN="rw upd upd-ni ro ps"
+export SCALE=5000
+#export TC_TO_RUN="all ro rw"
+export TC_TO_RUN="all"
 
-# the sysbench lua scripts location
-export SYSBENCH_LUA_SCRIPT_LOCATION="/usr/share/sysbench"
+# x86-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
+#export BENCHCORE="0,36,1,37"
+# arm-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
+#export BENCHCORE="0,1,2,3"
 
-# x86-vm-server-conf (4 sysbench cores, 8 server cores, 1 numa nodes)
-# arm-vm-server-conf (4 sysbench cores, 20 server cores, 1 numa nodes)
-export BENCHCORE="0,12,1,13"
+# x86-bms-server-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,54,1,19,37,55"
+# arm-bms-server-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34,3,35"
+
+# x86-bms-conf (12 sysbench cores, 60 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,54,1,19,37,55,2,20,38,56"
+# arm-bms-conf (16 sysbench cores, 112 server cores, 4 numa nodes)
+#export BENCHCORE="0,64,32,96,1,65,33,97,2,66,34,98,3,67,35,99"
+
+# x86-bms-conf (6 sysbench cores, 22 server cores, 2 numa nodes)
+#export BENCHCORE="0,18,36,1,19,37"
+# arm-bms-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
+#export BENCHCORE="0,32,1,33,2,34,3,35"
+
+if [-z $BENCHCORE ]
+  echo 'cpu affinity for running client is not set'
+  exit 1
+fi
 
 # core on target machine
-servercore=24
+servercore=128
 
 #-------------------------------------------------------------------------------------
 # execution start. avoid modifying anything post this point. All your enviornment
 # variable should be set above.
-
 
 #=======================
 # step-0: check for presence of existing result directory
@@ -67,9 +84,15 @@ mkdir -p output/$TESTCASE
 
 export PGSQL_BASE_DIR="/opt/projects/pgsql/non-forked-pgsql/installed"
 export PGSQLCMD="$PGSQL_BASE_DIR/bin/psql -d postgres -U $PGSQL_USER"
+export PGBENCH="$PGSQL_BASE_DIR/bin/pgbench -U $PGSQL_USER"
 
 if [ ! -f "$PGSQL_BASE_DIR/bin/psql" ]; then
     echo "psql not found. Check/Set 'PGSQL_BASE_DIR'"
+    exit 1
+fi
+
+if [ ! -f "$PGSQL_BASE_DIR/bin/pgbench" ]; then
+    echo "pgbench not found. Check/Set 'PGSQL_BASE_DIR'"
     exit 1
 fi
 
@@ -85,10 +108,9 @@ fi
 
 if [ $SKIPLOAD -eq 0 ]; then
   echo -e "\n\n"
-  echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
-  ./load-data/load-data.sh &> output/$TESTCASE/load-data.out
-  $PGSQLCMD -c "checkpoint" 2> /dev/null
-  sleep $tcchangeover
+  echo "Starting to load tables"
+  $PGBENCH -i -s $SCALE $PGSQL_DB 
+  $PGSQLCMD -c "checkpoint" &> /dev/null
 fi
 
 #=======================
@@ -97,7 +119,7 @@ fi
 
 if [[ $warmuptime -ne 0 ]]; then
   echo 'Warming up DB'
-  ./warmup/warmup.sh $servercore $warmuptime &> output/$TESTCASE/warmup.out
+  $PGBENCH $PGSQL_DB -s $SCALE -T $warmuptime -S -c $servercore -M prepared -P 5 -r &>> output/$TESTCASE/warmup.out
   echo -e "\n\n"
 fi
 
@@ -110,75 +132,31 @@ fi
 # run for 1/2/4/8/16/32/64/128 only.
 NCORE=$(( 12*$servercore ))
 
-#---- oltp-point-select
+#---- all
 count=1
-if [[ $TC_TO_RUN =~ "ps" ]]; then
+if [[ $TC_TO_RUN =~ "all" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
-    echo "Running oltp-point-select with $count threads"
-    ./workload/oltp-point-select.sh $count &>> output/$TESTCASE/oltp-point-select.out
-    count=$(( count * 2 ))
-  done
-else
-  echo "Skipping oltp-point-select"
-fi
 
-#---- oltp-ro
-count=1
-if [[ $TC_TO_RUN =~ "ro" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-read-only with $count threads"
-    ./workload/oltp-ro.sh $count &>> output/$TESTCASE/oltp-ro.out
-    count=$(( count * 2 ))
-  done
-else
-  echo "Skipping oltp-ro"
-fi
+    TASKSET="taskset -c "
+    IFS=',' read -ra client_cores <<< "$BENCHCORE"
+    if [[ $count -lt ${#client_cores[@]} ]]
+    then
+      for (( i=0; i < $count; i++ ));
+      do
+        TASKSET="$TASKSET${client_cores[$i]},"
+      done
+      TASKSET=$(echo "$TASKSET" | sed "s,\,$,,")
+    else
+      TASKSET="taskset -c $BENCHCORE"
+    fi
 
-#---- oltp-rw
-count=1
-if [[ $TC_TO_RUN =~ "rw" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-rw with $count threads"
-    ./workload/oltp-rw.sh $count &>> output/$TESTCASE/oltp-rw.out
+    echo "Running default (select + update (5)) with $count threads"
+    $TASKSET $PGBENCH $PGSQL_DB -s $SCALE -T $TIME_PER_TC -c $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-all.out
     count=$(( count * 2 ))
-    sleep $scchangeover
   done
-  sleep $tcchangeover
 else
-  echo "Skipping oltp-rw"
-fi
-
-#---- oltp-update-index
-count=1
-if [[ $TC_TO_RUN =~ "upd" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-update-index with $count threads"
-    ./workload/oltp-update-index.sh $count &>> output/$TESTCASE/oltp-update-index.out
-    count=$(( count * 2 ))
-    sleep $scchangeover
-  done
-  sleep $tcchangeover
-else
-  echo "Skipping oltp-update-index"
-fi
-
-#---- oltp-update-non-index
-count=1
-if [[ $TC_TO_RUN =~ "upd-ni" ]]; then
-  for (( iter=1; count<=NCORE; iter++ ))
-  do
-    echo "Running oltp-update-non-index with $count threads"
-    ./workload/oltp-update-non-index.sh $count &>> output/$TESTCASE/oltp-update-non-index.out
-    count=$(( count * 2 ))
-    sleep $scchangeover
-  done
-  sleep $tcchangeover
-else
-  echo "Skipping oltp-update-non-index"
+  echo "Skipping default selection"
 fi
 
 echo "Workload processed"

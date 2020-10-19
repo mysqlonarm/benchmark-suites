@@ -1,0 +1,18 @@
+pgbench: warning: scale option ignored, using count from pgbench_branches table (1250)
+starting vacuum...end.
+progress: 5.0 s, 109964.7 tps, lat 0.154 ms stddev 0.083
+progress: 10.0 s, 111604.7 tps, lat 0.150 ms stddev 0.060
+transaction type: <builtin: select only>
+scaling factor: 1250
+query mode: prepared
+number of clients: 24
+number of threads: 1
+duration: 10 s
+number of transactions actually processed: 1107875
+latency average = 0.152 ms
+latency stddev = 0.072 ms
+tps = 110782.548220 (including connections establishing)
+tps = 110808.457554 (excluding connections establishing)
+statement latencies in milliseconds:
+         0.000  \set aid random(1, 100000 * :scale)
+         0.151  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;

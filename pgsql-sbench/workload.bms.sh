@@ -59,6 +59,11 @@ export SYSBENCH_LUA_SCRIPT_LOCATION="/usr/share/sysbench"
 # arm-bms-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
 #export BENCHCORE="0,32,1,33,2,34,3,35"
 
+if [-z $BENCHCORE ]
+  echo 'cpu affinity for running client is not set'
+  exit 1
+fi
+
 # core on target machine
 servercore=128
 
@@ -81,12 +86,19 @@ mkdir -p output/$TESTCASE
 # step-1
 #=======================
 
-export PGSQL_BASE_DIR=`/opt/projects/pgsql/non-forked-pgsql/installed`
-export PGSQLCMD="$PGSQL_BASE_DIR/bin/psql -d $PGSQL_DB -U $PGSQL_USER"
+
+export PGSQL_BASE_DIR="/opt/projects/pgsql/non-forked-pgsql/installed"
+export PGSQLCMD="$PGSQL_BASE_DIR/bin/psql -d postgres -U $PGSQL_USER"
+
+if [ ! -f "$PGSQL_BASE_DIR/bin/psql" ]; then
+    echo "psql not found. Check/Set 'PGSQL_BASE_DIR'"
+    exit 1
+fi
 
 # if there is no pgsql client on local machine then adjust PGSQL_BASE_DIR accordingly.
 if [ $SKIPLOAD -eq 0 ]; then
-  $PGSQLCMD -c "drop database if exists $PGSQL_DB; create database $PGSQL_DB" 2> /dev/null
+  $PGSQLCMD -c "drop database if exists $PGSQL_DB;" &> /dev/null
+  $PGSQLCMD -c "create database $PGSQL_DB;" &> /dev/null
 fi
 
 #=======================
