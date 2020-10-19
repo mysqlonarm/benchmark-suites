@@ -56,7 +56,7 @@ export TC_TO_RUN="all"
 # arm-bms-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
 #export BENCHCORE="0,32,1,33,2,34,3,35"
 
-if [-z $BENCHCORE ]
+if [ -z $BENCHCORE ]; then
   echo 'cpu affinity for running client is not set'
   exit 1
 fi
