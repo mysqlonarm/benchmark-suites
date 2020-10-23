@@ -74,6 +74,12 @@ then
 fi
 
 export MYSQL_BASE_DIR=`grep "basedir" conf/n1.cnf | cut -d '=' -f 2`
+
+if [ ! -f "$MYSQL_BASE_DIR/bin/mysql" ]; then
+  echo 'mysql client not found. please consider setting "MYSQL_BASE_DIR"'
+  exit 1
+fi
+
 export MYSQLCMD="$MYSQL_BASE_DIR/bin/mysql -h $MYSQL_HOST -P $MYSQL_PORT $SOCK \
             -u $MYSQL_USER --password=$MYSQL_PASSWD"
 
