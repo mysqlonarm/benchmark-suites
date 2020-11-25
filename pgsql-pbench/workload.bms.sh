@@ -29,12 +29,11 @@ export TIME_PER_TC=60
 export WARMUP_PER_TC=10
 # sleep between 2 scalability
 scchangeover=10
-# sleep between 2 sub-testcase run (like while switching from rw -> ro)
-tcchangeover=0
+# sleep between 2 sub-testcase run (like while switching from rw -> tpcb)
+tcchangeover=120
 
 export SCALE=5000
-#export TC_TO_RUN="all ro rw"
-export TC_TO_RUN="all"
+export TC_TO_RUN="ro rw tpcb"
 
 # x86-bms-server-conf (4 sysbench cores, 28 server cores, 1 numa nodes)
 #export BENCHCORE="0,36,1,37"
@@ -119,7 +118,12 @@ fi
 
 if [[ $warmuptime -ne 0 ]]; then
   echo 'Warming up DB'
-  $PGBENCH $PGSQL_DB -s $SCALE -T $warmuptime -S -c $servercore -M prepared -P 5 -r &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -c "create extension pg_prewarm;" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -c "select pg_prewarm('pgbench_branches'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -c "select pg_prewarm('pgbench_history'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -c "select pg_prewarm('pgbench_tellers'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -c "select pg_prewarm('pgbench_accounts'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGBENCH $PGSQL_DB -T $warmuptime -b select-only -c $servercore -j $servercore -M prepared -P 5 -r &>> output/$TESTCASE/warmup.out
   echo -e "\n\n"
 fi
 
@@ -132,9 +136,9 @@ fi
 # run for 1/2/4/8/16/32/64/128 only.
 NCORE=$(( 12*$servercore ))
 
-#---- all
+#---- select-only
 count=1
-if [[ $TC_TO_RUN =~ "all" ]]; then
+if [[ $TC_TO_RUN =~ "ro" ]]; then
   for (( iter=1; count<=NCORE; iter++ ))
   do
 
@@ -151,12 +155,69 @@ if [[ $TC_TO_RUN =~ "all" ]]; then
       TASKSET="taskset -c $BENCHCORE"
     fi
 
-    echo "Running default (select + update (5)) with $count threads"
-    $TASKSET $PGBENCH $PGSQL_DB -s $SCALE -T $TIME_PER_TC -c $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-all.out
+    echo "Running select-only with $count threads"
+    $TASKSET $PGBENCH $PGSQL_DB -T $TIME_PER_TC -b select-only -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-ro.out
     count=$(( count * 2 ))
   done
 else
-  echo "Skipping default selection"
+  echo "Skipping read-only selection"
+fi
+
+#---- simple-update
+count=1
+if [[ $TC_TO_RUN =~ "rw" ]]; then
+  for (( iter=1; count<=NCORE; iter++ ))
+  do
+
+    TASKSET="taskset -c "
+    IFS=',' read -ra client_cores <<< "$BENCHCORE"
+    if [[ $count -lt ${#client_cores[@]} ]]
+    then
+      for (( i=0; i < $count; i++ ));
+      do
+        TASKSET="$TASKSET${client_cores[$i]},"
+      done
+      TASKSET=$(echo "$TASKSET" | sed "s,\,$,,")
+    else
+      TASKSET="taskset -c $BENCHCORE"
+    fi
+
+    echo "Running simple-update with $count threads"
+    $TASKSET $PGBENCH $PGSQL_DB -T $TIME_PER_TC -b simple-update -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-rw.out
+    count=$(( count * 2 ))
+    sleep $scchangeover
+  done
+  sleep $tcchangeover
+else
+  echo "Skipping simple-update selection"
+fi
+
+#---- tpcb-like
+count=1
+if [[ $TC_TO_RUN =~ "tpcb" ]]; then
+  for (( iter=1; count<=NCORE; iter++ ))
+  do
+
+    TASKSET="taskset -c "
+    IFS=',' read -ra client_cores <<< "$BENCHCORE"
+    if [[ $count -lt ${#client_cores[@]} ]]
+    then
+      for (( i=0; i < $count; i++ ));
+      do
+        TASKSET="$TASKSET${client_cores[$i]},"
+      done
+      TASKSET=$(echo "$TASKSET" | sed "s,\,$,,")
+    else
+      TASKSET="taskset -c $BENCHCORE"
+    fi
+
+    echo "Running tpcb-like with $count threads"
+    $TASKSET $PGBENCH $PGSQL_DB -T $TIME_PER_TC -b tpcb-like -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-tcpb.out
+    count=$(( count * 2 ))
+  done
+  sleep $tcchangeover
+else
+  echo "Skipping tcpb selection"
 fi
 
 echo "Workload processed"
