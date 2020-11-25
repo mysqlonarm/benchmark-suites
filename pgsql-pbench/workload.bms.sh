@@ -118,11 +118,11 @@ fi
 
 if [[ $warmuptime -ne 0 ]]; then
   echo 'Warming up DB'
-  $PGSQLCMD -c "create extension pg_prewarm;" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -c "select pg_prewarm('pgbench_branches'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -c "select pg_prewarm('pgbench_history'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -c "select pg_prewarm('pgbench_tellers'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -c "select pg_prewarm('pgbench_accounts'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -d $PGSQL_DB -c "create extension pg_prewarm;" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_branches'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_history'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_tellers'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_accounts'::regclass);" &>> output/$TESTCASE/warmup.out
   $PGBENCH $PGSQL_DB -T $warmuptime -b select-only -c $servercore -j $servercore -M prepared -P 5 -r &>> output/$TESTCASE/warmup.out
   echo -e "\n\n"
 fi
