@@ -35,6 +35,7 @@ int one_action()
 #ifdef FETCH_ADD
      x.fetch_add(1);
 #endif
+  return 0;
 }
 
 int workload_execute()
@@ -42,6 +43,7 @@ int workload_execute()
    for(int i=0;i<1000000;++i){
      one_action();
    }
+   return 0;
 }
 
 int main(int argc, char *argv[]) {
