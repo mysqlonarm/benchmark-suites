@@ -4,32 +4,25 @@
 using namespace std;
 
 int global;
-
 std::atomic<int> x{0};
-void load() {
+std::atomic<unsigned long> ops{0};
+
+void cas() {
   global = 0;
   int e{0};
 #ifdef OPTIMIZED
-  x.compare_exchange_strong(e, false, std::memory_order_acquire);
+  x.compare_exchange_strong(e, false, std::memory_order_acquire, std::memory_order_acquire);
+  ops.fetch_add(1, std::memory_order_relaxed);
 #else
   x.compare_exchange_strong(e, false);
-#endif
-}
-
-void store() {
-  global = 0;
-#ifdef OPTIMIZED
-  x.store(false, std::memory_order_release);
-#else
-  x.store(false);
+  ops.fetch_add(1);
 #endif
 }
 
 void workload_execute()
 {
   for (int i = 0; i < 1000000; ++i) {
-    load();
-    store();
+    cas();
   }
 }
 

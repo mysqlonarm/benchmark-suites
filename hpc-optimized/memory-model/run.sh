@@ -1,7 +1,7 @@
 #!/bin/bash
 
-g++ -O2 -g loadstore.cc -lpthread -lz -o loadstore
-g++ -O2 -g loadstore.cc -DOPTIMIZED -lpthread -lz -o loadstore-opt
+g++ -O2 -g loadstore.cc -lpthread -o loadstore
+g++ -O2 -g loadstore.cc -DOPTIMIZED -lpthread -o loadstore-opt
 
 for (( c=1; c<=256; c*=2 ))
 do
