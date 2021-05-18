@@ -13,7 +13,7 @@ slave_parallel_threads=32
 wsrep_provider="/opt/projects/mysql/106/non-forked-mdb/mdb/installed/lib/libgalera_smm.so"
 wsrep_cluster_name="mariadbonarm-cluster"
 wsrep_cluster_address="gcomm://127.0.0.1:4010,127.0.0.1:5010,127.0.0.1:6010"
-wsrep_node_name="n2"
+wsrep_node_name="n3"
 wsrep_provider_options="gmcast.listen_addr=tcp://0.0.0.0:6010"
 wsrep_slave_threads=32
 
