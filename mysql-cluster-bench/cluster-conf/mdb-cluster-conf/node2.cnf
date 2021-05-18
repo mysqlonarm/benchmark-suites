@@ -10,10 +10,17 @@ server-id=2
 innodb_fast_shutdown=0
 slave_parallel_threads=32
 
+wsrep_provider="/opt/projects/mysql/106/non-forked-mdb/mdb/installed/lib/libgalera_smm.so"
+wsrep_cluster_name="mariadbonarm-cluster"
+wsrep_cluster_address="gcomm://127.0.0.1:4010,127.0.0.1:5010,127.0.0.1:6010"
+wsrep_node_name="n2"
+wsrep_provider_options="gmcast.listen_addr=tcp://0.0.0.0:5010"
+wsrep_slave_threads=32
+
 #### bin-log
 #skip-log-bin
 # log bin is not enabled by default so need to be specify it explicitly.
-log_bin=1
+log_bin=mysql-bin
 sync_binlog=1
 binlog_format = ROW
 binlog_row_image=MINIMAL
