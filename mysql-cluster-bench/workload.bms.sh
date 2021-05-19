@@ -145,6 +145,7 @@ do
 done
 sleepcounter=$((sleepcounter*(time_per_tc+scchangeover)*3/2))
 
+./workload/sbm.monitor.sh "$mastercmd" $sleepcounter &> output/$TESTCASE/master.sbm.out &
 ./workload/sbm.monitor.sh "$slave1cmd" $sleepcounter &> output/$TESTCASE/slave1.sbm.out &
 ./workload/sbm.monitor.sh "$slave2cmd" $sleepcounter &> output/$TESTCASE/slave2.sbm.out &
 
