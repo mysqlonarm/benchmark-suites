@@ -39,6 +39,7 @@ innodb_max_dirty_pages_pct=90
 innodb_max_dirty_pages_pct_lwm=10
 # since there is only 1 buffer pool starting mdb-10.5
 innodb_lru_scan_depth=16384
+innodb_lru_flush_size=2048
 innodb_flush_method=O_DIRECT  # recommended as innodb has its own buffer pool cache
 innodb_flush_neighbors=0      # neighbors flushing turned off for SSD
 innodb_page_cleaners=8        # should not exceed number of buffer pool instance
