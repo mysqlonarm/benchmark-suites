@@ -7,5 +7,6 @@ for (( c=1; c<=256; c*=2 ))
 do
   echo "Running $c parallelism"
   ./loadstore $c
+  echo 3 > /proc/sys/vm/drop_caches
   ./loadstore-opt $c
 done;

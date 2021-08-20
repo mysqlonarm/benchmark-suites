@@ -1,28 +1,28 @@
 #include <atomic>
 #include <thread>
 #include <iostream>
+#include <iomanip>
 using namespace std;
 
-int global;
-std::atomic<int> x{0};
+std::atomic<bool> go{false};
 std::atomic<unsigned long> ops{0};
+int global;
 
-void cas() {
+void incr() {
+  // ensure all store is done before core may proceed.
   global = 0;
-  int e{0};
 #ifdef OPTIMIZED
-  x.compare_exchange_strong(e, false, std::memory_order_acquire, std::memory_order_acquire);
   ops.fetch_add(1, std::memory_order_relaxed);
 #else
-  x.compare_exchange_strong(e, false);
   ops.fetch_add(1);
 #endif
 }
 
 void workload_execute()
 {
+  while (!go);
   for (int i = 0; i < 1000000; ++i) {
-    cas();
+    incr();
   }
 }
 
@@ -40,6 +40,9 @@ int main(int argc, char *argv[]) {
   for (size_t i = 0; i < num_of_threads; ++i) {
     handles[i] = new std::thread(workload_execute);
   }
+
+  go = true;
+
   for (size_t i = 0; i < num_of_threads; ++i) {
     handles[i]->join();
   }
@@ -52,4 +55,8 @@ int main(int argc, char *argv[]) {
 
   std::chrono::duration<double> elapsed = finish - start;
   std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+  std::cout << "ops: " << ops.load() << "\n";
+  std::cout << "ops/sec: " << std::setprecision (15) << ops.load() / elapsed.count() << "\n";
+  std::cout << "-----------------------" << "\n";
 }
+
