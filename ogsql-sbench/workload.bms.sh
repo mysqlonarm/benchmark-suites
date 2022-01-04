@@ -58,7 +58,14 @@ export SYSBENCH_LUA_SCRIPT_LOCATION="/usr/share/sysbench"
 #export BENCHCORE="0,18,36,1,19,37"
 # arm-bms-conf (8 sysbench cores, 56 server cores, 2 numa nodes)
 #export BENCHCORE="0,32,1,33,2,34,3,35"
-export BENCHCORE="0,24,1,25,2,26"
+#export BENCHCORE="0,24,1,25,2,26"
+
+#export BENCHCORE="0,1,2"
+#export BENCHCORE="0,24,1,25,2,26"
+#export BENCHCORE="0,24,48,72,1,25,49,73,2,26,50,74"
+#export BENCHCORE="0-23"
+#export BENCHCORE="0-47"
+#export BENCHCORE="0-95"
 
 if [ -z $BENCHCORE ]; then
   echo 'cpu affinity for running client is not set'
