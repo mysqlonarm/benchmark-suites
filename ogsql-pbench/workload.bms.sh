@@ -62,7 +62,7 @@ export TC_TO_RUN="ro rw"
 #export BENCHCORE="0,24,48,72,1,25,49,73,2,26,50,74"
 #export BENCHCORE="0-23"
 #export BENCHCORE="0-47"
-export BENCHCORE="0-95"
+#export BENCHCORE="0-95"
 
 
 if [ -z $BENCHCORE ]; then
