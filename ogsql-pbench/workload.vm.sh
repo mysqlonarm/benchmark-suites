@@ -13,12 +13,12 @@ if [ "$2" = "skipload" ]; then
 	SKIPLOAD=1
 fi
 
-export PGSQL_HOST="localhost"
-export PGSQL_PORT=5432
-export PGSQL_SOCK="/tmp/n1.sock"
-export PGSQL_USER="root"
-export PGSQL_DB=$TESTCASE
-export PGSQL_PASSWD=""
+export GSQL_HOST="localhost"
+export GSQL_PORT=5432
+export GSQL_SOCK="/tmp/n1.sock"
+export GSQL_USER="root"
+export GSQL_DB=$TESTCASE
+export GSQL_PASSWD="RootPass123"
 
 # tc combination: 120/60/10/10/0
 # workload-warmup time
@@ -32,8 +32,9 @@ scchangeover=10
 # sleep between 2 sub-testcase run (like while switching from rw -> tpcb)
 tcchangeover=120
 
-export SCALE=1250
-export TC_TO_RUN="ro rw tpcb"
+export SCALE=2500
+#export TC_TO_RUN="ro rw tpcb"
+export TC_TO_RUN="ro rw"
 
 export BENCHCORE="0,12,1,13"
 
@@ -63,24 +64,24 @@ mkdir -p output/$TESTCASE
 # step-1
 #=======================
 
-export PGSQL_BASE_DIR="/opt/projects/pgsql/non-forked-pgsql/installed"
-export PGSQLCMD="$PGSQL_BASE_DIR/bin/psql -d postgres -U $PGSQL_USER"
-export PGBENCH="$PGSQL_BASE_DIR/bin/pgbench -U $PGSQL_USER"
+export GSQL_BASE_DIR="/opt/projects/ogauss/non-forked-ogauss/installed"
+export GSQLCMD="$GSQL_BASE_DIR/bin/gsql -d postgres -U $GSQL_USER -W $GSQL_PASSWD"
+export PGBENCH="$GSQL_BASE_DIR/bin/pgbench -U $GSQL_USER -W $GSQL_PASSWD"
 
-if [ ! -f "$PGSQL_BASE_DIR/bin/psql" ]; then
-    echo "psql not found. Check/Set 'PGSQL_BASE_DIR'"
+if [ ! -f "$GSQL_BASE_DIR/bin/gsql" ]; then
+    echo "psql not found. Check/Set 'GSQL_BASE_DIR'"
     exit 1
 fi
 
-if [ ! -f "$PGSQL_BASE_DIR/bin/pgbench" ]; then
-    echo "pgbench not found. Check/Set 'PGSQL_BASE_DIR'"
+if [ ! -f "$GSQL_BASE_DIR/bin/pgbench" ]; then
+    echo "pgbench not found. Check/Set 'GSQL_BASE_DIR'"
     exit 1
 fi
 
-# if there is no pgsql client on local machine then adjust PGSQL_BASE_DIR accordingly.
+# if there is no pgsql client on local machine then adjust GSQL_BASE_DIR accordingly.
 if [ $SKIPLOAD -eq 0 ]; then
-  $PGSQLCMD -c "drop database if exists $PGSQL_DB;" &> /dev/null
-  $PGSQLCMD -c "create database $PGSQL_DB;" &> /dev/null
+  $GSQLCMD -c "drop database if exists $GSQL_DB;" &> /dev/null
+  $GSQLCMD -c "create database $GSQL_DB;" &> /dev/null
 fi
 
 #=======================
@@ -90,8 +91,8 @@ fi
 if [ $SKIPLOAD -eq 0 ]; then
   echo -e "\n\n"
   echo "Starting to load tables"
-  $PGBENCH -i -s $SCALE $PGSQL_DB 
-  $PGSQLCMD -c "checkpoint" &> /dev/null
+  $PGBENCH -i -s $SCALE $GSQL_DB
+  $GSQLCMD -c "checkpoint" &> /dev/null
 fi
 
 #=======================
@@ -100,12 +101,12 @@ fi
 
 if [[ $warmuptime -ne 0 ]]; then
   echo 'Warming up DB'
-  $PGSQLCMD -d $PGSQL_DB -c "create extension pg_prewarm;" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_branches'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_history'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_tellers'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGSQLCMD -d $PGSQL_DB -c "select pg_prewarm('pgbench_accounts'::regclass);" &>> output/$TESTCASE/warmup.out
-  $PGBENCH $PGSQL_DB -T $warmuptime -b select-only -c $servercore -j $servercore -M prepared -P 5 -r &>> output/$TESTCASE/warmup.out
+  #$GSQLCMD -d $GSQL_DB -c "create extension pg_prewarm;" &>> output/$TESTCASE/warmup.out
+  #$GSQLCMD -d $GSQL_DB -c "select pg_prewarm('pgbench_branches'::regclass);" &>> output/$TESTCASE/warmup.out
+  #$GSQLCMD -d $GSQL_DB -c "select pg_prewarm('pgbench_history'::regclass);" &>> output/$TESTCASE/warmup.out
+  #$GSQLCMD -d $GSQL_DB -c "select pg_prewarm('pgbench_tellers'::regclass);" &>> output/$TESTCASE/warmup.out
+  #$GSQLCMD -d $GSQL_DB -c "select pg_prewarm('pgbench_accounts'::regclass);" &>> output/$TESTCASE/warmup.out
+  $PGBENCH $GSQL_DB -T $warmuptime -S -c $servercore -j $servercore -M prepared -P 5 -r &>> output/$TESTCASE/warmup.out
   echo -e "\n\n"
 fi
 
@@ -138,7 +139,7 @@ if [[ $TC_TO_RUN =~ "ro" ]]; then
     fi
 
     echo "Running select-only with $count threads"
-    $TASKSET $PGBENCH $PGSQL_DB -T $TIME_PER_TC -b select-only -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-ro.out
+    $TASKSET $PGBENCH $GSQL_DB -T $TIME_PER_TC -S -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-ro.out
     count=$(( count * 2 ))
   done
 else
@@ -165,7 +166,7 @@ if [[ $TC_TO_RUN =~ "rw" ]]; then
     fi
 
     echo "Running simple-update with $count threads"
-    $TASKSET $PGBENCH $PGSQL_DB -T $TIME_PER_TC -b simple-update -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-rw.out
+    $TASKSET $PGBENCH $GSQL_DB -T $TIME_PER_TC -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-rw.out
     count=$(( count * 2 ))
     sleep $scchangeover
   done
@@ -194,7 +195,7 @@ if [[ $TC_TO_RUN =~ "tpcb" ]]; then
     fi
 
     echo "Running tpcb-like with $count threads"
-    $TASKSET $PGBENCH $PGSQL_DB -T $TIME_PER_TC -b tpcb-like -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-tcpb.out
+    $TASKSET $PGBENCH $GSQL_DB -T $TIME_PER_TC -b tpcb-like -c $count -j $count -M prepared -P 5 -r &>> output/$TESTCASE/pgbench-tcpb.out
     count=$(( count * 2 ))
   done
   sleep $tcchangeover
@@ -212,4 +213,4 @@ echo -e "\n\n"
 echo "Processing result"
 ./process-result/presult.sh $TESTCASE
 
-$PGSQLCMD -c "checkpoint" 2> /dev/null
+$GSQLCMD -c "checkpoint" 2> /dev/null
