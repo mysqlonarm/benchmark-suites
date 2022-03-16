@@ -13,12 +13,12 @@ if [ "$2" = "skipload" ]; then
 	SKIPLOAD=1
 fi
 
-export PGSQL_HOST="localhost"
-export PGSQL_PORT=5432
-export PGSQL_SOCK="/tmp/n1.sock"
-export PGSQL_USER="root"
-export PGSQL_DB=$TESTCASE
-export PGSQL_PASSWD=""
+export GSQL_HOST="localhost"
+export GSQL_PORT=5432
+export GSQL_SOCK="/tmp/n1.sock"
+export GSQL_USER="root"
+export GSQL_DB=$TESTCASE
+export GSQL_PASSWD="RootPass123"
 
 # tc combination: 120/60/10/10/0
 # workload-warmup time
@@ -65,18 +65,18 @@ mkdir -p output/$TESTCASE
 # step-1
 #=======================
 
-export PGSQL_BASE_DIR="/opt/projects/pgsql/non-forked-pgsql/installed"
-export PGSQLCMD="$PGSQL_BASE_DIR/bin/psql -d postgres -U $PGSQL_USER"
+export GSQL_BASE_DIR="/opt/projects/ogauss/non-forked-ogauss/installed"
+export GSQLCMD="$GSQL_BASE_DIR/bin/gsql -d postgres -U $GSQL_USER -W $GSQL_PASSWD"
 
-if [ ! -f "$PGSQL_BASE_DIR/bin/psql" ]; then
-    echo "psql not found. Check/Set 'PGSQL_BASE_DIR'"
+if [ ! -f "$GSQL_BASE_DIR/bin/gsql" ]; then
+    echo "gsql not found. Check/Set 'GSQL_BASE_DIR'"
     exit 1
 fi
 
-# if there is no pgsql client on local machine then adjust PGSQL_BASE_DIR accordingly.
+# if there is no pgsql client on local machine then adjust GSQL_BASE_DIR accordingly.
 if [ $SKIPLOAD -eq 0 ]; then
-  $PGSQLCMD -c "drop database if exists $PGSQL_DB;" &> /dev/null
-  $PGSQLCMD -c "create database $PGSQL_DB;" &> /dev/null
+  $GSQLCMD -c "drop database if exists $GSQL_DB;" &> /dev/null
+  $GSQLCMD -c "create database $GSQL_DB;" &> /dev/null
 fi
 
 #=======================
@@ -87,7 +87,7 @@ if [ $SKIPLOAD -eq 0 ]; then
   echo -e "\n\n"
   echo "Starting to load $TABLES tables (each with $TABLE_SIZE rows)"
   ./load-data/load-data.sh &> output/$TESTCASE/load-data.out
-  $PGSQLCMD -c "checkpoint" 2> /dev/null
+  $GSQLCMD -c "checkpoint" 2> /dev/null
   sleep $tcchangeover
 fi
 
@@ -191,4 +191,4 @@ echo -e "\n\n"
 echo "Processing result"
 ./process-result/presult.sh $TESTCASE
 
-$PGSQLCMD -c "checkpoint" 2> /dev/null
+$GSQLCMD -c "checkpoint" 2> /dev/null
